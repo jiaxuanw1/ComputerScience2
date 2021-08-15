@@ -14,15 +14,20 @@ import java.util.Set;
 public class AnagramMaker {
 
     public static void main(String[] args) {
+        // Prompt user to input a word or phrase to find anagrams of
         System.out.println("Please input a word or phrase:");
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine().toUpperCase().replaceAll("\\s", "");
         scanner.close();
 
+        // Load dictionary words into a list
         List<String> dictionary = getDictionary("src/anagram/dictionary.txt");
-        List<String> anagrams = filterWords(generatePermutations(input), dictionary);
+        // Generate all permutations and eliminate those not in the dictionary
+        List<String> anagrams = getValidAnagrams(generatePermutations(input), dictionary);
+        // Alphabetize the list of anagrams
         Collections.sort(anagrams);
 
+        // Display all valid anagrams
         if (anagrams.size() > 0) {
             System.out.println("\nAll valid anagrams (in alphabetical order):");
             for (String s : anagrams) {
@@ -33,16 +38,25 @@ public class AnagramMaker {
         }
     }
 
+    /**
+     * Generates all the possible permutations (without repeats) of the specified
+     * String.
+     * 
+     * @param word the String to generate permutations of
+     * @return set containing the permutations
+     */
     public static Set<String> generatePermutations(String word) {
-        // I use a HashSet so that duplicate permutations are not added
+        // I use a set so that duplicate permutations are not added
         Set<String> permutations = new HashSet<String>();
 
-        // Base case - a word with only 1 character only has 1 permutation (itself)
+        // Base case - a word with 0 or 1 character only has 1 permutation (itself)
         if (word.length() <= 1) {
             permutations.add(word);
             return permutations;
         }
 
+        // For each character in the word, keep it at the front and recursively generate
+        // all permutations of the remaining characters
         for (int i = 0; i < word.length(); i++) {
             String subword = new StringBuilder(word).deleteCharAt(i).toString();
             Set<String> subPermutations = generatePermutations(subword);
@@ -50,23 +64,47 @@ public class AnagramMaker {
                 permutations.add(word.charAt(i) + subPerm);
             }
         }
+
+        // Return the set of permutations
         return permutations;
     }
 
-    public static List<String> filterWords(Set<String> permutations, List<String> dictionary) {
+    /**
+     * Receives a list of String permutations and returns a list containing only the
+     * permutations that are valid words found in a specified dictionary.
+     * 
+     * @param permutations set containing all permutations to check
+     * @param dictionary   list containing all valid dictionary words
+     * @return list containing only the permutations that are valid words
+     */
+    public static List<String> getValidAnagrams(Set<String> permutations, List<String> dictionary) {
+        // Initialize new list to store only valid anagrams
         List<String> validAnagrams = new ArrayList<String>();
+
         for (String perm : permutations) {
+            // Each permutation is only added if found in the dictionary
             if (dictionary.contains(perm)) {
                 validAnagrams.add(perm);
             }
         }
+
+        // Return the list of only valid anagrams
         return validAnagrams;
     }
 
+    /**
+     * Reads a specified dictionary text file and loads every word into a list. The
+     * text file should be formatted such that each word is on its own line, with no
+     * empty lines. All words in the returned list are fully capitalized.
+     * 
+     * @param filepath the path of the dictionary text file
+     * @return list containing every word in the text file
+     */
     public static List<String> getDictionary(String filepath) {
         List<String> dictionary = new ArrayList<String>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(new File(filepath)));
+            // Add each line of text as new element in dictionary list
             String word = br.readLine();
             while (word != null) {
                 dictionary.add(word.toUpperCase());
