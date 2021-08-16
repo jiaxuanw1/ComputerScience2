@@ -1,7 +1,6 @@
 package anagram;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -115,9 +114,7 @@ public class AnagramMaker {
                 word = br.readLine();
             }
             br.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("Unable to find dictionary file.");
-        } catch (IOException e1) {
+        } catch (IOException e) {
             System.out.println("Unable to read dictionary file.");
         }
     }
