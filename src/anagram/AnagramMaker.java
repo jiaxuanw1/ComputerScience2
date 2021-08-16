@@ -7,19 +7,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Set;
+
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 public class AnagramMaker {
 
     private List<String> dictionary = new ArrayList<String>();
 
     public static void main(String[] args) {
+        // Set system theme
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Prompt user to input a word or phrase to find anagrams of
-        System.out.println("Please input a word or phrase:");
-        Scanner scanner = new Scanner(System.in);
-        String input = scanner.nextLine().toUpperCase().replaceAll("\\s", "");
-        scanner.close();
+        String input = JOptionPane.showInputDialog("Please input a word or phrase:");
+        input = input.toUpperCase().replaceAll("\\s", "");
 
         // Construct a new AnagramMaker object
         AnagramMaker anagramMaker = new AnagramMaker();
@@ -34,12 +41,13 @@ public class AnagramMaker {
 
         // Display all valid anagrams
         if (anagrams.size() > 0) {
-            System.out.println("\nAll valid anagrams (in alphabetical order):");
+            StringBuilder allAnagrams = new StringBuilder();
             for (String s : anagrams) {
-                System.out.println(s);
+                allAnagrams.append("\n" + s);
             }
+            JOptionPane.showMessageDialog(null, "All valid anagrams (in alphabetical order):" + allAnagrams.toString());
         } else {
-            System.out.println("\nNo valid anagrams!");
+            JOptionPane.showMessageDialog(null, "No valid anagrams!");
         }
     }
 
@@ -115,7 +123,7 @@ public class AnagramMaker {
             }
             br.close();
         } catch (IOException e) {
-            System.out.println("Unable to read dictionary file.");
+            JOptionPane.showMessageDialog(null, "Unable to read dictionary file.");
         }
     }
 
