@@ -1,7 +1,7 @@
 package anagram;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,6 +13,8 @@ import java.util.Set;
 
 public class AnagramMaker {
 
+    private List<String> dictionary = new ArrayList<String>();
+
     public static void main(String[] args) {
         // Prompt user to input a word or phrase to find anagrams of
         System.out.println("Please input a word or phrase:");
@@ -20,10 +22,14 @@ public class AnagramMaker {
         String input = scanner.nextLine().toUpperCase().replaceAll("\\s", "");
         scanner.close();
 
+        // Construct a new AnagramMaker object
+        AnagramMaker anagramMaker = new AnagramMaker();
         // Load dictionary words into a list
-        List<String> dictionary = getDictionary("src/anagram/dictionary.txt");
-        // Generate all permutations and eliminate those not in the dictionary
-        List<String> anagrams = getValidAnagrams(generatePermutations(input), dictionary);
+        anagramMaker.loadDictionary("src/anagram/dictionary.txt");
+        // Generate all permutations of the input word/phrase
+        Set<String> permutations = anagramMaker.generatePermutations(input);
+        // Eliminate permutations not found in the dictionary
+        List<String> anagrams = anagramMaker.getValidAnagrams(permutations);
         // Alphabetize the list of anagrams
         Collections.sort(anagrams);
 
@@ -45,7 +51,7 @@ public class AnagramMaker {
      * @param word the String to generate permutations of
      * @return set containing the permutations
      */
-    public static Set<String> generatePermutations(String word) {
+    public Set<String> generatePermutations(String word) {
         // I use a set so that duplicate permutations are not added
         Set<String> permutations = new HashSet<String>();
 
@@ -71,13 +77,12 @@ public class AnagramMaker {
 
     /**
      * Receives a list of String permutations and returns a list containing only the
-     * permutations that are valid words found in a specified dictionary.
+     * permutations that are valid words found in the dictionary word list.
      * 
      * @param permutations set containing all permutations to check
-     * @param dictionary   list containing all valid dictionary words
      * @return list containing only the permutations that are valid words
      */
-    public static List<String> getValidAnagrams(Set<String> permutations, List<String> dictionary) {
+    public List<String> getValidAnagrams(Set<String> permutations) {
         // Initialize new list to store only valid anagrams
         List<String> validAnagrams = new ArrayList<String>();
 
@@ -93,28 +98,28 @@ public class AnagramMaker {
     }
 
     /**
-     * Reads a specified dictionary text file and loads every word into a list. The
-     * text file should be formatted such that each word is on its own line, with no
-     * empty lines. All words in the returned list are fully capitalized.
+     * Reads a specified dictionary text file and loads every word into the
+     * dictionary word list. The text file should be formatted such that each word
+     * is on its own line, with no empty lines. All words in the returned list are
+     * fully capitalized.
      * 
      * @param filepath the path of the dictionary text file
-     * @return list containing every word in the text file
      */
-    public static List<String> getDictionary(String filepath) {
-        List<String> dictionary = new ArrayList<String>();
+    public void loadDictionary(String filepath) {
         try {
-            BufferedReader br = new BufferedReader(new FileReader(new File(filepath)));
-            // Add each line of text as new element in dictionary list
+            BufferedReader br = new BufferedReader(new FileReader(filepath));
+            // Add each line of text as new element in dictionary
             String word = br.readLine();
             while (word != null) {
                 dictionary.add(word.toUpperCase());
                 word = br.readLine();
             }
             br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            System.out.println("Unable to find dictionary file.");
+        } catch (IOException e1) {
+            System.out.println("Unable to read dictionary file.");
         }
-        return dictionary;
     }
 
 }
