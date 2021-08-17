@@ -4,52 +4,15 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
 public class AnagramMaker {
 
     private List<String> dictionary = new ArrayList<String>();
-
-    public static void main(String[] args) {
-        // Set system theme
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // Prompt user to input a word or phrase to find anagrams of
-        String input = JOptionPane.showInputDialog("Please input a word or phrase:");
-        input = input.toUpperCase().replaceAll("\\s", "");
-
-        // Construct a new AnagramMaker object
-        AnagramMaker anagramMaker = new AnagramMaker();
-        // Load dictionary words into a list
-        anagramMaker.loadDictionary("src/anagram/dictionary.txt");
-        // Generate all permutations of the input word/phrase
-        Set<String> permutations = anagramMaker.generatePermutations(input);
-        // Eliminate permutations not found in the dictionary
-        List<String> anagrams = anagramMaker.getValidAnagrams(permutations);
-        // Alphabetize the list of anagrams
-        Collections.sort(anagrams);
-
-        // Display all valid anagrams
-        if (anagrams.size() > 0) {
-            StringBuilder allAnagrams = new StringBuilder();
-            for (String s : anagrams) {
-                allAnagrams.append("\n" + s);
-            }
-            JOptionPane.showMessageDialog(null, "All valid anagrams (in alphabetical order):" + allAnagrams.toString());
-        } else {
-            JOptionPane.showMessageDialog(null, "No valid anagrams!");
-        }
-    }
 
     /**
      * Generates all the possible permutations (without repeats) of the specified
