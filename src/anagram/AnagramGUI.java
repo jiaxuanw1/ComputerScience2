@@ -1,18 +1,18 @@
 package anagram;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import java.awt.Font;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JTextField;
-import javax.swing.JTextArea;
 import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 
 public class AnagramGUI extends JFrame {
 
@@ -64,7 +64,7 @@ public class AnagramGUI extends JFrame {
         // Find anagrams button
         JButton generateButton = new JButton("Find anagrams!");
         generateButton.setFont(new Font("Consolas", Font.PLAIN, 11));
-        generateButton.setBounds(10, 89, 117, 23);
+        generateButton.setBounds(10, 89, 130, 23);
         contentPane.add(generateButton);
         generateButton.addActionListener((event) -> {
             // Construct new AnagramMaker object
