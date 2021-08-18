@@ -2,9 +2,8 @@ package fractals;
 
 import java.util.concurrent.TimeUnit;
 
-public class KochSnowflake {
+public class KochSnowflake extends Turtle {
 
-    Turtle turtle = new Turtle();
     private int min = 9;
 
     public static void main(String[] args) {
@@ -30,7 +29,7 @@ public class KochSnowflake {
                 e.printStackTrace();
             }
 
-            turtle.paint(degrees, length);
+            paint(degrees, length);
             return;
         }
 
@@ -50,9 +49,9 @@ public class KochSnowflake {
      */
     public void drawSnowflake(int size) {
         // Move turtle into position so the fractal is in frame
-        turtle.move(180, 200); // west
-        turtle.move(90, 125); // south
-        turtle.move(-90, 0); // face west
+        move(180, 200); // west
+        move(90, 125); // south
+        move(-90, 0); // face west
 
         // First stage is an equilateral triangle
         for (int i = 0; i < 3; i++) {

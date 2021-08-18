@@ -1,6 +1,7 @@
 package anagram;
 
 import java.awt.Font;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -13,6 +14,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.JCheckBox;
+import javax.swing.JScrollPane;
 
 public class AnagramGUI extends JFrame {
 
@@ -24,6 +27,7 @@ public class AnagramGUI extends JFrame {
         super("Anagram Maker");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 390, 400);
+        setResizable(false);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
@@ -45,7 +49,7 @@ public class AnagramGUI extends JFrame {
         // Input instructions label
         JLabel inputLabel = new JLabel("Please input a word or phrase to find anagrams of:");
         inputLabel.setFont(new Font("Consolas", Font.PLAIN, 12));
-        inputLabel.setBounds(10, 40, 354, 14);
+        inputLabel.setBounds(10, 40, 355, 14);
         contentPane.add(inputLabel);
 
         // Input text field
@@ -54,18 +58,31 @@ public class AnagramGUI extends JFrame {
         contentPane.add(inputField);
         inputField.setColumns(10);
 
+        // Dictionary words only checkbox
+        JCheckBox dictionaryCheckBox = new JCheckBox("Show only dictionary words");
+        dictionaryCheckBox.setBounds(146, 85, 166, 23);
+        contentPane.add(dictionaryCheckBox);
+
         // Text field displaying list of anagrams
         JTextArea anagramDisplay = new JTextArea();
+        anagramDisplay.setWrapStyleWord(true);
+        anagramDisplay.setLineWrap(true);
         anagramDisplay.setEditable(false);
         anagramDisplay.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        anagramDisplay.setBounds(10, 123, 354, 227);
-        contentPane.add(anagramDisplay);
+        anagramDisplay.setBounds(1, 1, 341, 225);
+
+        JScrollPane scrollPane = new JScrollPane(anagramDisplay);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setBounds(10, 123, 355, 227);
+        contentPane.add(scrollPane);
 
         // Find anagrams button
         JButton generateButton = new JButton("Find anagrams!");
         generateButton.setFont(new Font("Consolas", Font.PLAIN, 11));
-        generateButton.setBounds(10, 89, 130, 23);
+        generateButton.setBounds(10, 85, 130, 23);
         contentPane.add(generateButton);
+
         generateButton.addActionListener((event) -> {
             // Construct new AnagramMaker object
             AnagramMaker anagramMaker = new AnagramMaker();
@@ -76,8 +93,15 @@ public class AnagramGUI extends JFrame {
             String input = inputField.getText().toUpperCase().replaceAll("\\s", "");
             // Generate all permutations of the input word/phrase
             Set<String> permutations = anagramMaker.generatePermutations(input);
-            // Eliminate permutations not found in the dictionary
-            List<String> anagrams = anagramMaker.getValidAnagrams(permutations);
+
+            // Eliminate permutations not found in the dictionary if checkbox is selected
+            List<String> anagrams;
+            if (dictionaryCheckBox.isSelected()) {
+                anagrams = anagramMaker.getValidAnagrams(permutations);
+            } else {
+                anagrams = new ArrayList<String>(permutations);
+            }
+
             // Alphabetize the list of anagrams
             Collections.sort(anagrams);
 
@@ -85,13 +109,13 @@ public class AnagramGUI extends JFrame {
             if (anagrams.size() > 0) {
                 StringBuilder allAnagrams = new StringBuilder();
                 for (String s : anagrams) {
-                    allAnagrams.append("\n" + s);
+                    allAnagrams.append(s + ", ");
                 }
-                anagramDisplay.setText("All valid anagrams (in alphabetical order):" + allAnagrams.toString());
+                String displayText = allAnagrams.substring(0, allAnagrams.length() - 2);
+                anagramDisplay.setText(displayText);
             } else {
                 anagramDisplay.setText("No valid anagrams!");
             }
         });
     }
-
 }
