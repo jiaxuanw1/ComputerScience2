@@ -2,6 +2,8 @@ package fractals;
 
 import java.util.concurrent.TimeUnit;
 
+import util.Turtle;
+
 public class TreeFractal extends Turtle {
 
     private int min = 4;
@@ -22,7 +24,7 @@ public class TreeFractal extends Turtle {
         // Base case - minimum branch length has been reached, so the branch is drawn as
         // one line segment without sub-branches
         if (length <= min) {
-            // Wait 5ms between each stroke
+            // Wait 5 ms between each stroke
             try {
                 TimeUnit.MILLISECONDS.sleep(5);
             } catch (InterruptedException e) {

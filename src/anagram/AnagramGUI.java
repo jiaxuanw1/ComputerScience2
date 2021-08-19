@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.JCheckBox;
-import javax.swing.JScrollPane;
 
 public class AnagramGUI extends JFrame {
 
@@ -87,7 +87,7 @@ public class AnagramGUI extends JFrame {
             // Construct new AnagramMaker object
             AnagramMaker anagramMaker = new AnagramMaker();
             // Load dictionary words into word list
-            anagramMaker.loadDictionary("src/dictionary.txt");
+            anagramMaker.loadDictionary("src/util/dictionary.txt");
 
             // Get user input from text field
             String input = inputField.getText().toUpperCase().replaceAll("\\s", "");
