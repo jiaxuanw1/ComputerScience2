@@ -16,9 +16,9 @@ public class AnagramMaker {
 
     /**
      * Generates all the possible permutations (without repeats) of the specified
-     * String.
+     * word.
      * 
-     * @param word the String to generate permutations of
+     * @param word the word to generate permutations of
      * @return set containing the permutations
      */
     public Set<String> generatePermutations(String word) {
@@ -43,6 +43,45 @@ public class AnagramMaker {
 
         // Return the set of permutations
         return permutations;
+    }
+
+    /**
+     * Finds all the anagrams of the specified word, allowing all letters in the
+     * word to be repeated. In other words, this method finds all the words that
+     * contain every unique letter in the specified word.
+     * 
+     * @param word the word to find anagrams of
+     * @return set containing the anagrams
+     */
+    public Set<String> generateAnagramsWithRepeatLetters(String word) {
+        // Initialize a set to store the anagrams in
+        Set<String> anagrams = new HashSet<String>();
+
+        // Generate the letter set for each dictionary word. Add the word to the
+        // anagrams list if its letter set matches that of the specified word.
+        Set<Character> letters = getLettersInWord(word);
+        for (String s : dictionary) {
+            if (getLettersInWord(s).equals(letters)) {
+                anagrams.add(s);
+            }
+        }
+
+        // Return the set of anagrams
+        return anagrams;
+    }
+
+    /**
+     * Returns a set containing every letter in the specified word.
+     * 
+     * @param word the word to get the letters of
+     * @return character set containing the letters
+     */
+    public Set<Character> getLettersInWord(String word) {
+        Set<Character> letters = new HashSet<Character>();
+        for (int i = 0; i < word.length(); i++) {
+            letters.add(word.charAt(i));
+        }
+        return letters;
     }
 
     /**

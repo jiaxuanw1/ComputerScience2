@@ -21,12 +21,14 @@ public class AnagramGUI extends JFrame {
 
     private JPanel contentPane;
     private JTextField inputField;
+    private JCheckBox dictionaryCheckBox;
+    private JCheckBox repeatLettersCheckBox;
 
     public AnagramGUI() {
         // Frame and content pane
         super("Anagram Maker");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 390, 400);
+        setBounds(100, 100, 390, 425);
         setResizable(false);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -59,9 +61,28 @@ public class AnagramGUI extends JFrame {
         inputField.setColumns(10);
 
         // Dictionary words only checkbox
-        JCheckBox dictionaryCheckBox = new JCheckBox("Show only dictionary words");
-        dictionaryCheckBox.setBounds(146, 85, 166, 23);
+        dictionaryCheckBox = new JCheckBox("Show only dictionary words");
+        dictionaryCheckBox.setBounds(6, 85, 166, 23);
         contentPane.add(dictionaryCheckBox);
+
+        // Allow repeated letters checkbox
+        repeatLettersCheckBox = new JCheckBox("Allow repeated input letters");
+        repeatLettersCheckBox.setBounds(174, 85, 166, 23);
+        contentPane.add(repeatLettersCheckBox);
+
+        // If allowing all permutations, disable repeat letters
+        dictionaryCheckBox.addActionListener((event) -> {
+            if (!dictionaryCheckBox.isSelected()) {
+                repeatLettersCheckBox.setSelected(false);
+            }
+
+        });
+        // If allowing repeat letters, only allow dictionary words
+        repeatLettersCheckBox.addActionListener((event) -> {
+            if (repeatLettersCheckBox.isSelected()) {
+                dictionaryCheckBox.setSelected(true);
+            }
+        });
 
         // Text field displaying list of anagrams
         JTextArea anagramDisplay = new JTextArea();
@@ -74,13 +95,13 @@ public class AnagramGUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(anagramDisplay);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setBounds(10, 123, 355, 227);
+        scrollPane.setBounds(10, 145, 355, 227);
         contentPane.add(scrollPane);
 
         // Find anagrams button
         JButton generateButton = new JButton("Find anagrams!");
         generateButton.setFont(new Font("Consolas", Font.PLAIN, 11));
-        generateButton.setBounds(10, 85, 130, 23);
+        generateButton.setBounds(10, 111, 130, 23);
         contentPane.add(generateButton);
 
         generateButton.addActionListener((event) -> {
@@ -92,7 +113,12 @@ public class AnagramGUI extends JFrame {
             // Get user input from text field
             String input = inputField.getText().toUpperCase().replaceAll("\\s", "");
             // Generate all permutations of the input word/phrase
-            Set<String> permutations = anagramMaker.generatePermutations(input);
+            Set<String> permutations;
+            if (repeatLettersCheckBox.isSelected()) {
+                permutations = anagramMaker.generateAnagramsWithRepeatLetters(input);
+            } else {
+                permutations = anagramMaker.generatePermutations(input);
+            }
 
             // Eliminate permutations not found in the dictionary if checkbox is selected
             List<String> anagrams;
