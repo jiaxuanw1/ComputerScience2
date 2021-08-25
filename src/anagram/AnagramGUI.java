@@ -23,6 +23,7 @@ public class AnagramGUI extends JFrame {
     private JTextField inputField;
     private JCheckBox dictionaryCheckBox;
     private JCheckBox repeatLettersCheckBox;
+    private JTextArea anagramDisplay;
 
     public AnagramGUI() {
         // Frame and content pane
@@ -75,7 +76,6 @@ public class AnagramGUI extends JFrame {
             if (!dictionaryCheckBox.isSelected()) {
                 repeatLettersCheckBox.setSelected(false);
             }
-
         });
         // If allowing repeat letters, only allow dictionary words
         repeatLettersCheckBox.addActionListener((event) -> {
@@ -85,13 +85,14 @@ public class AnagramGUI extends JFrame {
         });
 
         // Text field displaying list of anagrams
-        JTextArea anagramDisplay = new JTextArea();
+        anagramDisplay = new JTextArea();
         anagramDisplay.setWrapStyleWord(true);
         anagramDisplay.setLineWrap(true);
         anagramDisplay.setEditable(false);
         anagramDisplay.setFont(new Font("Monospaced", Font.PLAIN, 13));
         anagramDisplay.setBounds(1, 1, 341, 225);
 
+        // Scrollable view of anagram display text field
         JScrollPane scrollPane = new JScrollPane(anagramDisplay);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -104,44 +105,51 @@ public class AnagramGUI extends JFrame {
         generateButton.setBounds(10, 111, 130, 23);
         contentPane.add(generateButton);
 
-        generateButton.addActionListener((event) -> {
-            // Construct new AnagramMaker object
-            AnagramMaker anagramMaker = new AnagramMaker();
-            // Load dictionary words into word list
-            anagramMaker.loadDictionary("src/util/dictionary.txt");
+        // When button is clicked, generate and display anagrams
+        generateButton.addActionListener((event) -> findAndDisplayAnagrams(inputField.getText()));
+    }
 
-            // Get user input from text field
-            String input = inputField.getText().toUpperCase().replaceAll("\\s", "");
-            // Generate all permutations of the input word/phrase
-            Set<String> permutations;
-            if (repeatLettersCheckBox.isSelected()) {
-                permutations = anagramMaker.generateAnagramsWithRepeatLetters(input);
-            } else {
-                permutations = anagramMaker.generatePermutations(input);
+    /*
+     * Generates and displays all the anagrams of the input word/phrase according to
+     * the settings chosen by the user in the GUI.
+     */
+    public void findAndDisplayAnagrams(String input) {
+        // Construct new AnagramMaker object
+        AnagramMaker anagramMaker = new AnagramMaker();
+        // Load dictionary words into word list
+        anagramMaker.loadDictionary("src/util/dictionary.txt");
+
+        // Get user input from text field
+        input = input.toUpperCase().replaceAll("\\s", "");
+        // Generate all permutations of the input word/phrase
+        Set<String> permutations;
+        if (repeatLettersCheckBox.isSelected()) {
+            permutations = anagramMaker.generateAnagramsWithRepeatLetters(input);
+        } else {
+            permutations = anagramMaker.generatePermutations(input);
+        }
+
+        // Eliminate permutations not found in the dictionary if checkbox is selected
+        List<String> anagrams;
+        if (dictionaryCheckBox.isSelected()) {
+            anagrams = anagramMaker.getValidAnagrams(permutations);
+        } else {
+            anagrams = new ArrayList<String>(permutations);
+        }
+
+        // Alphabetize the list of anagrams
+        Collections.sort(anagrams);
+
+        // Display all valid anagrams
+        if (anagrams.size() > 0) {
+            StringBuilder allAnagrams = new StringBuilder();
+            for (String s : anagrams) {
+                allAnagrams.append(s + ", ");
             }
-
-            // Eliminate permutations not found in the dictionary if checkbox is selected
-            List<String> anagrams;
-            if (dictionaryCheckBox.isSelected()) {
-                anagrams = anagramMaker.getValidAnagrams(permutations);
-            } else {
-                anagrams = new ArrayList<String>(permutations);
-            }
-
-            // Alphabetize the list of anagrams
-            Collections.sort(anagrams);
-
-            // Display all valid anagrams
-            if (anagrams.size() > 0) {
-                StringBuilder allAnagrams = new StringBuilder();
-                for (String s : anagrams) {
-                    allAnagrams.append(s + ", ");
-                }
-                String displayText = allAnagrams.substring(0, allAnagrams.length() - 2);
-                anagramDisplay.setText(displayText);
-            } else {
-                anagramDisplay.setText("No valid anagrams!");
-            }
-        });
+            String displayText = allAnagrams.substring(0, allAnagrams.length() - 2);
+            anagramDisplay.setText(displayText);
+        } else {
+            anagramDisplay.setText("No valid anagrams!");
+        }
     }
 }
