@@ -4,7 +4,7 @@ import util.Turtle;
 
 public class KochSnowflake extends Turtle {
 
-    private int min = 4;
+    private final int min = 4;
 
     public static void main(String[] args) {
         KochSnowflake koch = new KochSnowflake();

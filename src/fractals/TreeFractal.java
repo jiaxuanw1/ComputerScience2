@@ -4,7 +4,7 @@ import util.Turtle;
 
 public class TreeFractal extends Turtle {
 
-    private int min = 1;
+    private final int min = 1;
 
     public static void main(String[] args) {
         TreeFractal fractal = new TreeFractal();
