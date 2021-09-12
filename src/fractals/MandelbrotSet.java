@@ -62,8 +62,11 @@ public class MandelbrotSet extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 Point clickPoint = e.getPoint();
-                scale *= 2;
+
+                // IMPORTANT -- update center before updating scale because pointToComplex
+                // method uses the current scale
                 center = pointToComplex(clickPoint);
+                scale *= 2;
 
                 new Thread(() -> generateMandelbrot()).start();
                 new DrawThread().start();
