@@ -52,6 +52,7 @@ public class MandelbrotSet extends JPanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(mandelbrot);
         frame.setSize(mandelbrot.getPreferredSize());
+        frame.pack();
         frame.setVisible(true);
     }
 
@@ -68,7 +69,7 @@ public class MandelbrotSet extends JPanel {
                 center = pointToComplex(clickPoint);
                 scale *= 2;
 
-                new Thread(() -> generateMandelbrot()).start();
+                new Thread(MandelbrotSet.this::generateMandelbrot).start();
                 new DrawThread().start();
             }
         });
@@ -85,7 +86,6 @@ public class MandelbrotSet extends JPanel {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 int iterations = numIterations(pointToComplex(x, y));
-
                 if (iterations < maxIterations) {
                     image.setRGB(x, y, colors[iterations % colors.length].getRGB());
                 } else {

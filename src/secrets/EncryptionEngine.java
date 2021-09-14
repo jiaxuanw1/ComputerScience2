@@ -74,8 +74,10 @@ public class EncryptionEngine {
      */
     public String toByteSizeString(int i) {
         String bin = Integer.toBinaryString(i);
-        bin = "0".repeat(8 - bin.length()) + bin;
-        return bin;
+        if (bin.length() > 8) {
+            bin = "00000000";
+        }
+        return "0".repeat(8 - bin.length()) + bin;
     }
 
 }
