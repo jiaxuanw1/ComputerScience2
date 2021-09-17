@@ -40,7 +40,7 @@ public class AnagramGUI extends JFrame {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error setting system theme!");
         }
 
         // Title text
