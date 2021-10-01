@@ -47,14 +47,12 @@ public class CameraDisplay {
         // Take Picture button
         JButton scanQRButton = new JButton("Scan QR Code!");
         scanQRButton.addActionListener((e) -> {
-            BufferedImage qrImage = camera.scanQR();
-            if (qrImage != null) {
-                try {
-                    String text = QRUtil.readAndDecode(qrImage);
-                    JOptionPane.showMessageDialog(null, text);
-                } catch (InvalidQRException ex) {
-                    JOptionPane.showMessageDialog(null, ex.getMessage());
-                }
+            try {
+                BufferedImage qrImage = camera.scanQR();
+                String text = QRUtil.readAndDecode(qrImage);
+                JOptionPane.showMessageDialog(null, text);
+            } catch (QRException ex) {
+                JOptionPane.showMessageDialog(null, ex.getMessage());
             }
         });
         canvas.add(scanQRButton);

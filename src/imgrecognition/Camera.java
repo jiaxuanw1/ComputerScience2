@@ -14,7 +14,6 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -38,9 +37,8 @@ public class Camera {
     private final int FPS;
 
     private final FrameGrabber grabber;
+    private final Java2DFrameConverter converter;
     private BufferedImage currentFrame;
-
-    private Java2DFrameConverter converter;
 
     private boolean scanningQR = true;
     private boolean bwOn = false;
@@ -123,7 +121,7 @@ public class Camera {
         }
     }
 
-    public BufferedImage scanQR() {
+    public BufferedImage scanQR() throws QRException {
         BufferedImage frame = getCurrentFrame(false, false, false);
         Mat origImg = bufferedImage2Mat(frame);
         findQRCode(frame);
@@ -169,8 +167,7 @@ public class Camera {
             BufferedImage qrImg = mat2BufferedImage(destImg);
             return blackAndWhite(qrImg, bwThresholdQR);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "QR code not found!");
-            return null;
+            throw new QRException("QR code not found!");
         }
 
     }
@@ -194,7 +191,7 @@ public class Camera {
 
         Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
-        MatOfPoint2f largestRectContour = null;
+        MatOfPoint2f largestRectContour = new MatOfPoint2f();
         double largestArea = 0;
 
         // Gets the rectangular contour with the largest enclosed area
@@ -207,7 +204,6 @@ public class Camera {
             MatOfPoint2f approxPolygon = new MatOfPoint2f();
 //            contour2f.fromList(contour.toList());
             contour.convertTo(contour2f, CvType.CV_32FC2);
-
             double epsilon = Imgproc.arcLength(contour2f, true) * 0.04;
             Imgproc.approxPolyDP(contour2f, approxPolygon, epsilon, true);
 
@@ -220,20 +216,24 @@ public class Camera {
             }
         }
 
-        List<MatOfPoint> approximation = new ArrayList<MatOfPoint>();
-        MatOfPoint approx1f = new MatOfPoint();
-        largestRectContour.convertTo(approx1f, CvType.CV_32S); // CvType.CV_32FC2 for 1f to 2f
-        approximation.add(approx1f);
-
-        // Draw contour onto frame
-        Mat withContour = new Mat();
-        src.copyTo(withContour);
-        Imgproc.drawContours(withContour, approximation, 0, new Scalar(0, 255, 0), 3);
-        BufferedImage imageWithOutline = mat2BufferedImage(withContour);
-
+        // Set QR contour to the largest rectangular contour found
         this.qrContour = largestRectContour;
 
-        return imageWithOutline;
+        MatOfPoint approx1f = new MatOfPoint();
+        largestRectContour.convertTo(approx1f, CvType.CV_32S); // CvType.CV_32FC2 for 1f to 2f
+        List<MatOfPoint> approximation = new ArrayList<MatOfPoint>();
+        approximation.add(approx1f);
+
+        // Draw outline onto frame
+        if (approximation.get(0).isContinuous()) {
+            Mat withContour = new Mat();
+            src.copyTo(withContour);
+            Imgproc.drawContours(withContour, approximation, 0, new Scalar(0, 255, 0), 3);
+            BufferedImage imageWithOutline = mat2BufferedImage(withContour);
+            return imageWithOutline;
+        } else {
+            return mat2BufferedImage(src);
+        }
     }
 
     public Mat bufferedImage2Mat(BufferedImage bimg) {

@@ -15,7 +15,7 @@ public class QRUtil {
     public static final int IMAGE_SIZE = 600;
     public static final int BORDER_SIZE = 40;
 
-    public static String readAndDecode(BufferedImage bimg) throws InvalidQRException {
+    public static String readAndDecode(BufferedImage bimg) throws QRException {
         return decode(readToBooleanGrid(bimg));
     }
 
@@ -102,13 +102,9 @@ public class QRUtil {
         return grid;
     }
 
-    public static String decode(boolean[][] grid) throws InvalidQRException {
+    public static String decode(boolean[][] grid) throws QRException {
         // Adjust orientation
         grid = orient(grid);
-
-        if (grid == null) {
-            throw new InvalidQRException("");
-        }
 
         // Check if the checksum matches the reading
         int bitsOn = 0;
@@ -124,7 +120,7 @@ public class QRUtil {
             checksum.append(grid[6][c] ? 1 : 0);
         }
         if (Integer.parseInt(checksum.toString(), 2) != bitsOn % 8) {
-            throw new InvalidQRException("Checksum does not match!");
+            throw new QRException("Invalid reading: Checksum does not match!");
         }
 
         StringBuilder text = new StringBuilder();
@@ -170,7 +166,7 @@ public class QRUtil {
      * Returns the specified boolean grid reading oriented such that the top-left
      * orientation bit is off.
      */
-    public static boolean[][] orient(boolean[][] grid) throws InvalidQRException {
+    public static boolean[][] orient(boolean[][] grid) throws QRException {
         int[] rotations = { 0, 90, 270, 180 };
         boolean[] orientationBits = { grid[1][1], grid[1][5], grid[5][1], grid[5][5] };
 
@@ -184,7 +180,7 @@ public class QRUtil {
         }
 
         if (bitsOff != 1) {
-            throw new InvalidQRException("Number of orientation bits off: " + bitsOff);
+            throw new QRException("Invalid reading! Number of orientation bits off: " + bitsOff);
         }
 
         return orientedGrid;
