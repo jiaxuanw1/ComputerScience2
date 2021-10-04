@@ -1,16 +1,26 @@
 package imgrecognition;
 
+import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
+import java.net.URI;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.UIManager;
 
@@ -36,6 +46,7 @@ public class CameraDisplay {
         canvas = new CanvasFrame("Camera");
         canvas.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         canvas.setLayout(new FlowLayout());
+        canvas.setPreferredSize(new Dimension(700, 600));
 
         // Set system theme
         try {
@@ -49,9 +60,8 @@ public class CameraDisplay {
         scanQRButton.addActionListener((e) -> {
             try {
                 BufferedImage qrImage = camera.scanQR();
-                String text = QRUtil.readAndDecode(qrImage);
-                JOptionPane.showMessageDialog(null, text);
-            } catch (QRException ex) {
+                displayQRReading(qrImage);
+            } catch (QRNotFoundException ex) {
                 JOptionPane.showMessageDialog(null, ex.getMessage());
             }
         });
@@ -86,8 +96,101 @@ public class CameraDisplay {
         executorService.scheduleAtFixedRate(() -> {
             BufferedImage currentFrame = camera.getCurrentFrame();
             canvas.showImage(currentFrame);
+
+//            try {
+//                BufferedImage qrImage = camera.scanQR();
+//                boolean[][] grid = QRUtil.qrToBooleanGrid(qrImage);
+//                String text = QRUtil.decode(grid);
+//                camera.displayImage(QRUtil.booleanGridToQR(grid));
+//                JOptionPane.showMessageDialog(null, text);
+//            } catch (Exception ex) {
+//            }
+
         }, 0, 1000 / camera.getFPS(), TimeUnit.MILLISECONDS);
 
+    }
+
+    public void displayQRReading(BufferedImage qrImage) {
+        // Initialize new frame
+        JFrame window = new JFrame("QR Code");
+        window.setPreferredSize(new Dimension(650, 395));
+        window.getContentPane().setLayout(null);
+        window.setVisible(true);
+
+        // Decode QR code, get hidden text and bit.ly link
+        boolean[][] grid = QRUtil.qrToBooleanGrid(qrImage);
+        BufferedImage qrDisplayImage = QRUtil.booleanGridToQR(grid);
+        String text;
+        try {
+            text = QRUtil.decode(grid);
+        } catch (InvalidQRException e) {
+            text = null;
+        }
+        final String encryptedText = text;
+        final String bitlyURL;
+        if (encryptedText != null) {
+            bitlyURL = "https://bit.ly/" + encryptedText;
+        } else {
+            bitlyURL = null;
+        }
+
+        // QR code display
+        JPanel imagePanel = new JPanel();
+        imagePanel.add(new JLabel(new ImageIcon(qrDisplayImage)));
+        imagePanel.setBounds(10, 11, 330, 330);
+        window.getContentPane().add(imagePanel);
+
+        // Encrypted text label
+        JLabel encryptedTextLabel = new JLabel("Encrypted text:  " + text);
+        if (encryptedText != null) {
+            encryptedTextLabel.setText("Encrypted text:  " + encryptedText);
+        } else {
+            encryptedTextLabel.setText("Invalid QR code!");
+        }
+        encryptedTextLabel.setFont(new Font("Consolas", Font.PLAIN, 14));
+        encryptedTextLabel.setBounds(375, 143, 230, 15);
+        window.getContentPane().add(encryptedTextLabel);
+
+        // Open bit.ly link button
+        JButton bitlyButton = new JButton("Open bit.ly link");
+        bitlyButton.setBounds(375, 160, 220, 23);
+        bitlyButton.addActionListener((e) -> {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                try {
+                    Desktop.getDesktop().browse(new URI(bitlyURL));
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Error opening link!");
+                }
+            }
+        });
+        window.getContentPane().add(bitlyButton);
+
+        // Copy text button
+        JButton copyTextButton = new JButton("Copy text");
+        copyTextButton.setBounds(375, 186, 105, 23);
+        copyTextButton.addActionListener((e) -> copyToClipboard(encryptedText));
+        window.getContentPane().add(copyTextButton);
+
+        // Copy link button
+        JButton copyLinkButton = new JButton("Copy bit.ly link");
+        copyLinkButton.setBounds(490, 186, 105, 23);
+        copyLinkButton.addActionListener((e) -> copyToClipboard(bitlyURL));
+        window.getContentPane().add(copyLinkButton);
+
+        // Disable buttons if text is null (i.e. QR code is invalid)
+        if (text == null) {
+            bitlyButton.setEnabled(false);
+            copyTextButton.setEnabled(false);
+            copyLinkButton.setEnabled(false);
+        }
+
+        window.pack();
+    }
+
+    public void copyToClipboard(String text) {
+        StringSelection stringSelection = new StringSelection(text);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
     }
 
 }

@@ -10,16 +10,46 @@ import javax.swing.JLabel;
 
 public class QRUtil {
 
-    private static final String CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz%";
+    private static final String CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz% ";
 
-    public static final int IMAGE_SIZE = 600;
-    public static final int BORDER_SIZE = 40;
+    public static final int SQUARE_SIZE = 40;
+    public static final int BLACK_BORDER = 15;
+    public static final int WHITE_BORDER = 10;
+    public static final int BORDER_SIZE = BLACK_BORDER + WHITE_BORDER; // 25
+    public static final int IMAGE_SIZE = SQUARE_SIZE * 7 + BORDER_SIZE * 2; // 330
 
-    public static String readAndDecode(BufferedImage bimg) throws QRException {
-        return decode(readToBooleanGrid(bimg));
+    public static String readAndDecode(BufferedImage bimg) throws InvalidQRException {
+        return decode(qrToBooleanGrid(bimg));
     }
 
-    public static boolean[][] readToBooleanGrid(BufferedImage bimg) {
+    public static BufferedImage booleanGridToQR(boolean[][] grid) {
+        BufferedImage qrImage = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_BYTE_BINARY);
+
+        for (int x = 0; x < IMAGE_SIZE; x++) {
+            for (int y = 0; y < IMAGE_SIZE; y++) {
+                // Black outer border
+                if (x < BLACK_BORDER || x >= IMAGE_SIZE - BLACK_BORDER || y < BLACK_BORDER
+                        || y >= IMAGE_SIZE - BLACK_BORDER) {
+                    qrImage.setRGB(x, y, 0xFF000000);
+                }
+                // White inner border
+                else if (x < BORDER_SIZE || x >= IMAGE_SIZE - BORDER_SIZE || y < BORDER_SIZE
+                        || y >= IMAGE_SIZE - BORDER_SIZE) {
+                    qrImage.setRGB(x, y, 0xFFFFFFFF);
+                }
+                // Inside QR code
+                else {
+                    int r = (y - BORDER_SIZE - 1) / SQUARE_SIZE;
+                    int c = (x - BORDER_SIZE - 1) / SQUARE_SIZE;
+                    qrImage.setRGB(x, y, grid[r][c] ? 0xFF000000 : 0xFFFFFFFF);
+                }
+            }
+        }
+
+        return qrImage;
+    }
+
+    public static boolean[][] qrToBooleanGrid(BufferedImage bimg) {
         boolean[][] grid = new boolean[7][7];
 
         // Scale image to 600 by 600 pixels
@@ -38,23 +68,24 @@ public class QRUtil {
             }
         }
 
-        JFrame window = new JFrame();
-        window.add(new JLabel(new ImageIcon(scaledImg)));
-        window.pack();
-        window.setVisible(true);
+//        JFrame window = new JFrame();
+//        window.add(new JLabel(new ImageIcon(scaledImg)));
+//        window.pack();
+//        window.setVisible(true);
         return grid;
     }
 
     public static boolean[][] encode(String text) {
+        // Append ignore characters if less than 7 characters
+        if (text.length() < 7) {
+            text += "%".repeat(7 - text.length());
+        }
+
         boolean[][] grid = new boolean[7][7];
 
         for (int i = 0; i < 7; i++) {
-            // Append ignore characters if less than 7 characters
-            if (text.length() < 7) {
-                text += "%".repeat(7 - text.length());
-            }
             int charNum = charToNum(text.charAt(i));
-            String bin = toFixedSizeBinaryString(charNum, 6);
+            String bin = toFixedSizeBinaryString(charNum >= 0 ? charNum : charToNum('%'), 6);
 
             // For columns 1 and 5, skip the locations of the orientation bits and write the
             // last bit in the corresponding adjacent column
@@ -102,7 +133,7 @@ public class QRUtil {
         return grid;
     }
 
-    public static String decode(boolean[][] grid) throws QRException {
+    public static String decode(boolean[][] grid) throws InvalidQRException {
         // Adjust orientation
         grid = orient(grid);
 
@@ -120,7 +151,7 @@ public class QRUtil {
             checksum.append(grid[6][c] ? 1 : 0);
         }
         if (Integer.parseInt(checksum.toString(), 2) != bitsOn % 8) {
-            throw new QRException("Invalid reading: Checksum does not match!");
+            throw new InvalidQRException("Checksum does not match.");
         }
 
         StringBuilder text = new StringBuilder();
@@ -166,7 +197,7 @@ public class QRUtil {
      * Returns the specified boolean grid reading oriented such that the top-left
      * orientation bit is off.
      */
-    public static boolean[][] orient(boolean[][] grid) throws QRException {
+    public static boolean[][] orient(boolean[][] grid) throws InvalidQRException {
         int[] rotations = { 0, 90, 270, 180 };
         boolean[] orientationBits = { grid[1][1], grid[1][5], grid[5][1], grid[5][5] };
 
@@ -180,7 +211,7 @@ public class QRUtil {
         }
 
         if (bitsOff != 1) {
-            throw new QRException("Invalid reading! Number of orientation bits off: " + bitsOff);
+            throw new InvalidQRException("Invalid reading! Number of orientation bits off: " + bitsOff);
         }
 
         return orientedGrid;
@@ -239,7 +270,7 @@ public class QRUtil {
     public static String toFixedSizeBinaryString(int i, int length) {
         String bin = Integer.toBinaryString(i);
         if (bin.length() > length) {
-            return "0".repeat(length);
+            throw new IllegalArgumentException("Binary number must fit within specified length!");
         }
         return "0".repeat(length - bin.length()) + bin;
     }

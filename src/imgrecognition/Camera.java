@@ -98,7 +98,7 @@ public class Camera {
      */
     public void displayImage(BufferedImage bimg) {
         if (bimg != null) {
-            JFrame window = new JFrame();
+            JFrame window = new JFrame("Image Display");
             window.add(new JLabel(new ImageIcon(bimg)));
             window.pack();
             window.setVisible(true);
@@ -114,14 +114,18 @@ public class Camera {
 
     public void saveImage(BufferedImage b, String fileName) {
         try {
-            ImageIO.write(b, "PNG", new File("src/imgrecognition" + fileName));
+            ImageIO.write(b, "PNG", new File("src/imgrecognition/images/" + fileName));
         } catch (Exception e) {
             System.out.println("WRITE IMAGE FAILED!! " + fileName);
             e.printStackTrace();
         }
     }
 
-    public BufferedImage scanQR() throws QRException {
+    /**
+     * Scans the current frame for a QR code. If found, the method fits the QR code
+     * portion of the image to a square image, which is returned.
+     */
+    public BufferedImage scanQR() throws QRNotFoundException {
         BufferedImage frame = getCurrentFrame(false, false, false);
         Mat origImg = bufferedImage2Mat(frame);
         findQRCode(frame);
@@ -153,7 +157,7 @@ public class Camera {
         // Transform to image with the size specified by QRUtil
         try {
             int imgSize = QRUtil.IMAGE_SIZE;
-            int bwThresholdQR = 160;
+            int bwThresholdQR = 180;
 
             MatOfPoint2f src = new MatOfPoint2f(sortedPoints[0], sortedPoints[1], sortedPoints[2], sortedPoints[3]);
             MatOfPoint2f dst = new MatOfPoint2f(new Point(0, 0), new Point(imgSize - 1, 0), new Point(0, imgSize - 1),
@@ -167,17 +171,22 @@ public class Camera {
             BufferedImage qrImg = mat2BufferedImage(destImg);
             return blackAndWhite(qrImg, bwThresholdQR);
         } catch (Exception e) {
-            throw new QRException("QR code not found!");
+            throw new QRNotFoundException();
         }
 
     }
 
+    /**
+     * Finds the QR code in the specified image and assigns the contour of the QR
+     * code's outline to qrContour. Returns the image with the outline drawn.
+     */
     public BufferedImage findQRCode(BufferedImage bimg) {
         Mat src = bufferedImage2Mat(bimg);
 
         // Convert image to grayscale
         Mat gray = new Mat();
         Imgproc.cvtColor(src, gray, Imgproc.COLOR_RGBA2GRAY);
+        // Blur image to smooth out noise
         Mat blur = new Mat();
         Imgproc.blur(gray, blur, new Size(3, 3));
 
@@ -220,7 +229,7 @@ public class Camera {
         this.qrContour = largestRectContour;
 
         MatOfPoint approx1f = new MatOfPoint();
-        largestRectContour.convertTo(approx1f, CvType.CV_32S); // CvType.CV_32FC2 for 1f to 2f
+        largestRectContour.convertTo(approx1f, CvType.CV_32S);
         List<MatOfPoint> approximation = new ArrayList<MatOfPoint>();
         approximation.add(approx1f);
 
@@ -315,14 +324,12 @@ public class Camera {
 
         for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
-
                 int maxRGB = bimg.getRGB(x, y);
                 List<Pixel> neighbors = getNeighboringPixels(x, y, bimg);
                 for (Pixel p : neighbors) {
                     maxRGB = Math.max(p.getRGB(), maxRGB);
                 }
                 dilated.setRGB(x, y, maxRGB);
-
             }
         }
 
@@ -344,14 +351,12 @@ public class Camera {
 
         for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
-
                 int minRGB = bimg.getRGB(x, y);
                 List<Pixel> neighbors = getNeighboringPixels(x, y, bimg);
                 for (Pixel p : neighbors) {
                     minRGB = Math.min(p.getRGB(), minRGB);
                 }
                 eroded.setRGB(x, y, minRGB);
-
             }
         }
 
