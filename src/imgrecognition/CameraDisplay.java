@@ -46,7 +46,7 @@ public class CameraDisplay {
         canvas = new CanvasFrame("Camera");
         canvas.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         canvas.setLayout(new FlowLayout());
-        canvas.setPreferredSize(new Dimension(700, 600));
+        canvas.setPreferredSize(new Dimension(740, 600));
 
         // Set system theme
         try {
@@ -72,13 +72,21 @@ public class CameraDisplay {
         shutterButton.addActionListener((e) -> camera.displayFrame());
         canvas.add(shutterButton);
 
+        // Show QR Outline check box
+        JCheckBox scanningQRCheckBox = new JCheckBox("Show QR Outline");
+        scanningQRCheckBox.setSelected(true);
+        scanningQRCheckBox.addActionListener((e) -> camera.setScanningQR(scanningQRCheckBox.isSelected()));
+        canvas.add(scanningQRCheckBox);
+
         // Toggle BW/Color check box
         JCheckBox bwCheckBox = new JCheckBox("Black/White");
+        bwCheckBox.setSelected(false);
         bwCheckBox.addActionListener((e) -> camera.setBw(bwCheckBox.isSelected()));
         canvas.add(bwCheckBox);
 
         // Mirror Image check box
         JCheckBox mirrorCheckBox = new JCheckBox("Mirrored");
+        mirrorCheckBox.setSelected(false);
         mirrorCheckBox.addActionListener((e) -> camera.setMirrored(mirrorCheckBox.isSelected()));
         canvas.add(mirrorCheckBox);
 
@@ -125,6 +133,7 @@ public class CameraDisplay {
             text = QRUtil.decode(grid);
         } catch (InvalidQRException e) {
             text = null;
+            System.out.println(e.getMessage());
         }
         final String encryptedText = text;
         final String bitlyURL;
@@ -178,7 +187,7 @@ public class CameraDisplay {
         window.getContentPane().add(copyLinkButton);
 
         // Disable buttons if text is null (i.e. QR code is invalid)
-        if (text == null) {
+        if (encryptedText == null) {
             bitlyButton.setEnabled(false);
             copyTextButton.setEnabled(false);
             copyLinkButton.setEnabled(false);

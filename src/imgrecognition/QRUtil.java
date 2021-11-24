@@ -84,8 +84,13 @@ public class QRUtil {
         boolean[][] grid = new boolean[7][7];
 
         for (int i = 0; i < 7; i++) {
+            // Get 6-bit binary representation of the character's number mapping.
+            // If the character does not have a mapping, encode an ignore character.
             int charNum = charToNum(text.charAt(i));
-            String bin = toFixedSizeBinaryString(charNum >= 0 ? charNum : charToNum('%'), 6);
+            if (charNum < 0) {
+                charNum = charToNum('%');
+            }
+            String bin = toFixedSizeBinaryString(charNum, 6);
 
             // For columns 1 and 5, skip the locations of the orientation bits and write the
             // last bit in the corresponding adjacent column
@@ -211,7 +216,7 @@ public class QRUtil {
         }
 
         if (bitsOff != 1) {
-            throw new InvalidQRException("Invalid reading! Number of orientation bits off: " + bitsOff);
+            throw new InvalidQRException("Number of orientation bits off: " + bitsOff);
         }
 
         return orientedGrid;
