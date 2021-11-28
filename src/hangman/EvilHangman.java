@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +46,7 @@ public class EvilHangman {
 
         // Reset list of guesses and number of remaining guesses
         lettersGuessed.clear();
-        guessesRemaining = 15;
+        guessesRemaining = 10;
 
         System.out.println("The word is " + wordLength + " letters long.");
         System.out.println("You have " + guessesRemaining + " guesses.");
@@ -89,14 +90,41 @@ public class EvilHangman {
             wordFamilies.get(pattern).add(word);
         }
 
-        // Set the current word list equal to largest word family
-        List<String> largestWordFamily = new ArrayList<String>();
-        for (List<String> wordFamily : wordFamilies.values()) {
-            if (wordFamily.size() > largestWordFamily.size()) {
-                largestWordFamily = wordFamily;
+        // Choose the most ideal word family and make it the new word list
+        wordList = chooseWordFamily(wordFamilies.values(), guess);
+    }
+
+    public List<String> chooseWordFamily(Collection<List<String>> wordFamilies, char guess) {
+        // Get all word families with the largest number of words
+        int largestSize = 0;
+        List<List<String>> largestWordFamilies = new ArrayList<List<String>>();
+        for (List<String> wordFamily : wordFamilies) {
+            if (wordFamily.size() > largestSize) {
+                largestSize = wordFamily.size();
+                largestWordFamilies.clear();
+                largestWordFamilies.add(wordFamily);
+            } else if (wordFamily.size() == largestSize) {
+                largestWordFamilies.add(wordFamily);
             }
         }
-        wordList = largestWordFamily;
+
+        // If there is only 1 largest word family, choose it
+        if (largestWordFamilies.size() == 1) {
+            return largestWordFamilies.get(0);
+        }
+
+        // If tie, choose word family with least occurrences of guessed letter
+        List<String> lowestGuessFamily = largestWordFamilies.get(0);
+        int lowestGuessCount = getCharCount(guess, lowestGuessFamily.get(0));
+        for (List<String> wordFamily : largestWordFamilies) {
+            int guessCount = getCharCount(guess, wordFamily.get(0));
+            if (guessCount < lowestGuessCount) {
+                lowestGuessFamily = wordFamily;
+                lowestGuessCount = guessCount;
+            }
+        }
+
+        return lowestGuessFamily;
     }
 
     public String getPattern(String word, List<Character> letters) {
@@ -108,20 +136,25 @@ public class EvilHangman {
         return wordPattern.toString();
     }
 
+    public int getCharCount(char c, String str) {
+        int charCount = 0;
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) == c) {
+                charCount++;
+            }
+        }
+        return charCount;
+    }
+
     public void updateGameStatus(char guess) {
         String word = wordList.get(0);
         String wordPattern = getPattern(word, lettersGuessed);
 
         // Display number of occurrences of the guessed letter in the word family
-        int charCount = 0;
-        for (int i = 0; i < word.length(); i++) {
-            if (word.charAt(i) == guess) {
-                charCount++;
-            }
-        }
-        if (charCount > 1) {
-            System.out.println("Yes, there are " + charCount + " copies of " + guess + ".");
-        } else if (charCount == 1) {
+        int guessCount = getCharCount(guess, wordPattern);
+        if (guessCount > 1) {
+            System.out.println("Yes, there are " + guessCount + " copies of " + guess + ".");
+        } else if (guessCount == 1) {
             System.out.println("Yes, there is 1 copy of " + guess + ".");
         } else {
             System.out.println("Sorry, there are no " + guess + "'s.");
@@ -135,7 +168,7 @@ public class EvilHangman {
             if (guessesRemaining > 1) {
                 System.out.println("You had " + guessesRemaining + " guesses left.");
             } else {
-                System.out.println("You had 1 guess remaining.");
+                System.out.println("You had 1 guess left.");
             }
             guessesRemaining = 0;
         }
