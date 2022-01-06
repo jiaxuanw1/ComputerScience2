@@ -1,5 +1,7 @@
 package grasshoppers;
 
+import java.util.Objects;
+
 public class Pixel {
 
     private final int x;
@@ -30,6 +32,23 @@ public class Pixel {
 
     public void resetGrasshoppers() {
         numGrasshoppers = 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Pixel)) {
+            return false;
+        }
+        Pixel p = (Pixel) o;
+        return x == p.getX() && y == p.getY();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 
     @Override

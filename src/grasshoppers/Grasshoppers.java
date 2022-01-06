@@ -6,7 +6,9 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -14,12 +16,13 @@ import javax.swing.JPanel;
 public class Grasshoppers extends JPanel {
 
     private final int JUMP_DIST = 30;
+    private final int GRASSHOPPERS_PER_GEN = 20000000;
     private final int SIDE_LENGTH = 300;
     private final int IMAGE_SIZE = 600;
 
     private Pixel[][] pixelGrid;
     private List<Pixel> allSpaces;
-    private List<Pixel> lawnSpaces;
+    private Set<Pixel> lawnSpaces;
     private Image image;
 
     private int lawnColor = 0xFF00CC00;
@@ -54,7 +57,7 @@ public class Grasshoppers extends JPanel {
             }
         }
 
-        lawnSpaces = new ArrayList<Pixel>();
+        lawnSpaces = new HashSet<Pixel>();
         BufferedImage lawnImage = new BufferedImage(SIDE_LENGTH, SIDE_LENGTH, BufferedImage.TYPE_INT_RGB);
 
         // Start with a 100 by 100 square lawn
@@ -74,6 +77,7 @@ public class Grasshoppers extends JPanel {
         // Set each pixel's grasshopper count to 0
         resetGrasshoppers();
 
+        int stayCount = 0;
         for (Pixel p : lawnSpaces) {
             for (int i = 0; i < 20000000 / lawnSpaces.size(); i++) {
                 // Jump in a random direction
@@ -90,11 +94,13 @@ public class Grasshoppers extends JPanel {
             }
         }
 
+        System.out.println(((double) stayCount) / GRASSHOPPERS_PER_GEN);
+
         // Sort all pixels by number of grasshoppers in descending order
         Collections.sort(allSpaces, (a, b) -> b.getNumGrasshoppers() - a.getNumGrasshoppers());
 
         // First 10,000 pixels in sorted list are the most landed-on spaces
-        lawnSpaces = allSpaces.subList(0, 10000);
+        lawnSpaces = new HashSet<Pixel>(allSpaces.subList(0, 10000));
 
         // Re-draw new lawn
         BufferedImage newImage = new BufferedImage(SIDE_LENGTH, SIDE_LENGTH, BufferedImage.TYPE_INT_RGB);
