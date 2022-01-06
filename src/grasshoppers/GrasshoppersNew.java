@@ -19,6 +19,9 @@ import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+/**
+ * Java implementation of solution submitted by Jacob to fivethirtyeight.org
+ */
 public class GrasshoppersNew extends JPanel {
 
     private final int lawnDim;
@@ -73,7 +76,7 @@ public class GrasshoppersNew extends JPanel {
      */
     public Map<List<Integer>, BigDecimal> jumpProbs() {
         // Consider a single patch at (31, 31) which can jump to patches from (0,0)
-        // through (62,62)
+        // through (61,61)
         int jumpDim = 2 * (int) (Math.ceil(jumpDist * lawnDim)) + 2; // 62
         int center = (int) (Math.ceil(jumpDist * lawnDim)) + 1; // 31
         int[][] jumpCounts = new int[jumpDim][jumpDim];
@@ -88,19 +91,13 @@ public class GrasshoppersNew extends JPanel {
                     double theta = thetaIdx * thetaInc;
                     double x1 = x0 + Math.cos(theta) * (center - 1);
                     double y1 = y0 + Math.sin(theta) * (center - 1);
-                    jumpCounts[(int) (Math.floor(x1))][(int) (Math.floor(y1))]++;
+                    jumpCounts[(int) Math.floor(x1)][(int) Math.floor(y1)]++;
                 }
             }
         }
 
-        int sumJumpCounts = 0;
-        for (int i = 0; i < jumpCounts.length; i++) {
-            for (int j = 0; j < jumpCounts[0].length; j++) {
-                sumJumpCounts += jumpCounts[i][j];
-            }
-        }
-
         // Generate map associating a (dx, dy) pair with its probability
+        int sumJumpCounts = Arrays.stream(jumpCounts).flatMapToInt(Arrays::stream).sum();
         Map<List<Integer>, BigDecimal> jumpProbs = new HashMap<List<Integer>, BigDecimal>();
         for (int x = 0; x < jumpDim; x++) {
             for (int y = 0; y < jumpDim; y++) {
@@ -140,12 +137,8 @@ public class GrasshoppersNew extends JPanel {
             // Divide all probabilities by total to make them true probabilities and
             // calculate score for old lawn
             BigDecimal oldLawnScore = BigDecimal.ZERO;
-            BigDecimal sumOfProbs = BigDecimal.ZERO;
-            for (int x = 0; x < probGrid.length; x++) {
-                for (int y = 0; y < probGrid[0].length; y++) {
-                    sumOfProbs = sumOfProbs.add(probGrid[x][y]);
-                }
-            }
+            BigDecimal sumOfProbs = Arrays.stream(probGrid).flatMap(Arrays::stream).reduce(BigDecimal.ZERO,
+                    (subtotal, element) -> subtotal.add(element));
             for (int x = 0; x < probGrid.length; x++) {
                 for (int y = 0; y < probGrid[0].length; y++) {
                     probGrid[x][y] = probGrid[x][y].divide(sumOfProbs, 30, RoundingMode.HALF_DOWN);
@@ -168,7 +161,7 @@ public class GrasshoppersNew extends JPanel {
             Collections.sort(nonLawnList, (a, b) -> a.get(2).compareTo(b.get(2)));
 
             // Generate sorted list of all patches in the current lawn
-            int numNewPatches = (int) (Math.floor(portionNew * lawnSize));
+            int numNewPatches = (int) Math.floor(portionNew * lawnSize);
             List<List<BigDecimal>> oldLawnList = new ArrayList<List<BigDecimal>>();
             for (List<Integer> patch : lawn) {
                 int x = patch.get(0);
@@ -209,7 +202,6 @@ public class GrasshoppersNew extends JPanel {
             portionNew *= coolingRate;
             generation++;
         }
-
     }
 
     @Override

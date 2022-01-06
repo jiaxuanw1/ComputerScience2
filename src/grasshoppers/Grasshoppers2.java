@@ -41,7 +41,6 @@ public class Grasshoppers2 extends JPanel {
         frame.setVisible(true);
 
         grasshoppers.anneal(0.95);
-
     }
 
     public Grasshoppers2(int lawnDim, double jumpDist) {
@@ -75,12 +74,12 @@ public class Grasshoppers2 extends JPanel {
     }
 
     public void anneal(double coolingRate) {
-        while (numNewTrades > 0) {
+        while (numNewTrades >= 1) {
             // Set each pixel's grasshopper count to 0
             resetGrasshoppers();
 
             int stayCount = 0;
-            int thetaSteps = 1000;
+            int thetaSteps = 2000;
             double thetaIncrement = 2 * Math.PI / thetaSteps;
             for (Pixel p : lawnSpaces) {
                 for (int i = 0; i < thetaSteps; i++) {
@@ -139,7 +138,7 @@ public class Grasshoppers2 extends JPanel {
             repaint();
 
             // Update number of new trades by the cooling factor
-            numNewTrades = (int) (numNewTrades * coolingRate);
+            numNewTrades = (int) Math.floor(numNewTrades * coolingRate);
         }
     }
 
@@ -161,7 +160,6 @@ public class Grasshoppers2 extends JPanel {
             }
         }
         return lawn;
-
     }
 
     public Set<Pixel> getRandomLawn() {

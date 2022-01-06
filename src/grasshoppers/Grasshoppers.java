@@ -88,6 +88,9 @@ public class Grasshoppers extends JPanel {
                 // Increment grasshopper count for pixel landed on
                 try {
                     pixelGrid[newX][newY].incrementGrasshopper();
+                    if (lawnSpaces.contains(pixelGrid[newX][newY])) {
+                        stayCount++;
+                    }
                 } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println(newX + ", " + newY);
                 }
