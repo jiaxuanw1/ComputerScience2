@@ -46,7 +46,7 @@ public class Grasshoppers2 extends JPanel {
     public Grasshoppers2(int lawnDim, double jumpDist) {
         this.lawnDim = lawnDim;
         this.lawnSize = lawnDim * lawnDim;
-        this.spaceDim = lawnDim * 3;
+        this.spaceDim = lawnDim * 5;
         this.jumpDist = jumpDist;
 
         setPreferredSize(new Dimension(IMAGE_DIM, IMAGE_DIM));

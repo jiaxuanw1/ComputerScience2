@@ -138,7 +138,7 @@ public class GrasshoppersNew extends JPanel {
             // calculate score for old lawn
             BigDecimal oldLawnScore = BigDecimal.ZERO;
             BigDecimal sumOfProbs = Arrays.stream(probGrid).flatMap(Arrays::stream).reduce(BigDecimal.ZERO,
-                    (subtotal, element) -> subtotal.add(element));
+                    BigDecimal::add);
             for (int x = 0; x < probGrid.length; x++) {
                 for (int y = 0; y < probGrid[0].length; y++) {
                     probGrid[x][y] = probGrid[x][y].divide(sumOfProbs, 30, RoundingMode.HALF_DOWN);
